@@ -1,0 +1,9 @@
+{
+  "name": "11leven",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aplicación universitaria para consultar alineaciones del Mundial",
+  "main": "server.js",
+  "scripts": { "start": "node server.js", "dev": "node --watch server.js", "db:setup": "node scripts/setupDatabase.js", "db:populate": "node scripts/populateDatabase.js", "db:lineups": "node scripts/syncFifaLineups.js", "db:results": "node scripts/populateFromFifaResults.js", "test:integration": "node scripts/testIntegration.js" },
+  "dependencies": { "dotenv": "^16.4.7", "express": "^4.21.2", "mysql2": "^3.11.5" }
+}

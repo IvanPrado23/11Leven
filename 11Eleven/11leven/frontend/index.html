@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>11Leven | Todos los Mundiales FIFA (2000 - 2026)</title>
+  <link rel="icon" href="img/app-icon.svg">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/hub.css">
+  <link rel="stylesheet" href="css/user-notifications.css">
+</head>
+<body>
+  <header class="site-header">
+    <a href="/" class="brand"><img src="img/logo-principal.svg" alt="11Leven"></a>
+    <nav>
+      <a class="active" href="/">Mundiales</a>
+      <a href="torneo.html?anio=2026">Mundial 2026</a>
+      <a href="admin.html">Administración</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero hub-hero">
+      <div>
+        <span class="eyebrow">Archivo Histórico Oficial · 2000 a 2026</span>
+        <h1>La historia de los Mundiales,<br><em>en tus manos.</em></h1>
+        <p>Explora cada edición de la Copa Mundial de la FIFA desde el 2000 hasta el 2026. Consulta formaciones tácticas en cancha, alineaciones oficiales, resultados y plantillas completas.</p>
+        
+        <div class="hub-stats-bar">
+          <div class="hub-stat-item">
+            <strong>7</strong>
+            <span>Ediciones</span>
+          </div>
+          <div class="hub-stat-item">
+            <strong>240</strong>
+            <span>Selecciones</span>
+          </div>
+          <div class="hub-stat-item">
+            <strong>480+</strong>
+            <span>Partidos</span>
+          </div>
+          <div class="hub-stat-item">
+            <strong>5,600+</strong>
+            <span>Jugadores</span>
+          </div>
+        </div>
+      </div>
+      <div class="ball-mark">
+        <img src="img/isotipo-color.svg" alt="11Leven">
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Selecciona una edición</span>
+          <h2>Copa Mundial de la FIFA</h2>
+        </div>
+        <button class="ghost" id="refreshHub">Actualizar</button>
+      </div>
+
+      <div id="hubStatus" class="notice" hidden></div>
+
+      <div id="tournamentsList" class="tournaments-grid">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>11Leven · Proyecto académico de Bases de Datos & Gestión Deportiva</footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/hub.js"></script>
+  <script src="js/user-notifications.js"></script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Administración | 11Leven</title>
+  <link rel="icon" href="img/app-icon.svg">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/form-help.css">
+</head>
+<body>
+  <header class="site-header dark">
+    <a href="/" class="brand"><img src="img/logo-blanco.svg" alt="11Leven"></a>
+    <nav>
+      <a href="/">Hub de Mundiales</a>
+      <a href="torneo.html?anio=2026">Mundial 2026</a>
+      <a class="active" href="admin.html">Administración</a>
+      <button id="logout" class="logout-button">Salir</button>
+    </nav>
+  </header>
+
+  <main class="admin-shell">
+    <aside>
+      <span class="eyebrow">Panel de Control</span>
+      <h1>Administración</h1>
+      <p>Gestiona los mundiales, selecciones, jugadores, partidos y alineaciones del sistema.</p>
+      <div class="tabs">
+        <button data-tab="torneos" class="active">Mundiales (Torneos)</button>
+        <button data-tab="selecciones">Selecciones</button>
+        <button data-tab="jugadores">Jugadores</button>
+        <button data-tab="partidos">Partidos</button>
+        <button data-tab="alineaciones">Alineaciones</button>
+        <button data-tab="usuarios">Usuarios</button>
+        <button data-tab="notificaciones">Notificaciones</button>
+      </div>
+    </aside>
+
+    <section class="admin-content">
+      <div id="flash" class="notice" hidden></div>
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" id="resourceLabel">Catálogo</span>
+          <h2 id="resourceTitle">Mundiales</h2>
+        </div>
+        <button class="primary" id="newRecord">+ Nuevo registro</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead id="tableHead"></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="recordDialog">
+    <form id="recordForm">
+      <div class="dialog-title">
+        <div>
+          <span class="eyebrow">Formulario</span>
+          <h2 id="formTitle">Nuevo registro</h2>
+        </div>
+        <button type="button" class="icon-button close-dialog" aria-label="Cerrar">×</button>
+      </div>
+
+      <input type="hidden" id="recordId">
+      <div id="formFields" class="form-grid"></div>
+
+      <div id="playerPicker" hidden>
+        <div class="picker-heading">
+          <h3>Jugadores de la selección</h3>
+          <p>Marca el rol y la posición. Los nombres se cargan automáticamente.</p>
+        </div>
+        <div id="playersList" class="players-list"></div>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="ghost close-dialog">Cancelar</button>
+        <button type="submit" class="primary">Guardar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="js/api.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

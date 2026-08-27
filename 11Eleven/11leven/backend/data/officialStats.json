@@ -1,0 +1,499 @@
+[
+  {
+    "edicion": 2002,
+    "top_10_goleadores": [
+      {
+        "nombre": "Ronaldo",
+        "valor": 8
+      }
+    ],
+    "top_10_asistidores": [
+      {
+        "nombre": "Michael Ballack",
+        "valor": 4
+      }
+    ],
+    "top_10_regateadores": [
+      {
+        "nombre": "El Hadji Diouf",
+        "valor": 35
+      }
+    ],
+    "promedio_goles_equipos": [
+      {
+        "equipo": "Promedio Todo el Torneo",
+        "promedio_goles": 2.52
+      },
+      {
+        "equipo": "Promedio Campeón",
+        "promedio_goles": 2.57
+      }
+    ]
+  },
+  {
+    "edicion": 2006,
+    "top_10_goleadores": [
+      {
+        "nombre": "Miroslav Klose",
+        "valor": 5
+      }
+    ],
+    "top_10_asistidores": [
+      {
+        "nombre": "Francesco Totti",
+        "valor": 4
+      }
+    ],
+    "top_10_regateadores": [
+      {
+        "nombre": "Cristiano Ronaldo",
+        "valor": 31
+      }
+    ],
+    "promedio_goles_equipos": [
+      {
+        "equipo": "Promedio Todo el Torneo",
+        "promedio_goles": 2.3
+      },
+      {
+        "equipo": "Promedio Campeón",
+        "promedio_goles": 1.71
+      }
+    ]
+  },
+  {
+    "edicion": 2010,
+    "top_10_goleadores": [
+      {
+        "nombre": "Thomas Müller",
+        "valor": 5
+      }
+    ],
+    "top_10_asistidores": [
+      {
+        "nombre": "Múltiples jugadores",
+        "valor": 3
+      }
+    ],
+    "top_10_regateadores": [
+      {
+        "nombre": "Lionel Messi",
+        "valor": 31
+      }
+    ],
+    "promedio_goles_equipos": [
+      {
+        "equipo": "Promedio Todo el Torneo",
+        "promedio_goles": 2.27
+      },
+      {
+        "equipo": "Promedio Campeón",
+        "promedio_goles": 1.14
+      }
+    ]
+  },
+  {
+    "edicion": 2014,
+    "top_10_goleadores": [
+      {
+        "nombre": "James Rodríguez",
+        "valor": 6
+      }
+    ],
+    "top_10_asistidores": [
+      {
+        "nombre": "Juan Cuadrado",
+        "valor": 4
+      }
+    ],
+    "top_10_regateadores": [
+      {
+        "nombre": "Lionel Messi",
+        "valor": 46
+      }
+    ],
+    "promedio_goles_equipos": [
+      {
+        "equipo": "Promedio Todo el Torneo",
+        "promedio_goles": 2.67
+      },
+      {
+        "equipo": "Promedio Campeón",
+        "promedio_goles": 2.57
+      }
+    ]
+  },
+  {
+    "edicion": 2018,
+    "top_10_goleadores": [
+      {
+        "nombre": "Harry Kane",
+        "valor": 6
+      }
+    ],
+    "top_10_asistidores": [
+      {
+        "nombre": "Múltiples jugadores",
+        "valor": 2
+      }
+    ],
+    "top_10_regateadores": [
+      {
+        "nombre": "Eden Hazard",
+        "valor": 40
+      }
+    ],
+    "promedio_goles_equipos": [
+      {
+        "equipo": "Promedio Todo el Torneo",
+        "promedio_goles": 2.64
+      },
+      {
+        "equipo": "Promedio Campeón",
+        "promedio_goles": 2
+      }
+    ]
+  },
+  {
+    "edicion": 2026,
+    "top_10_goleadores": [
+      {
+        "nombre": "Kylian Mbappé",
+        "valor": 10
+      },
+      {
+        "nombre": "Lionel Messi",
+        "valor": 8
+      },
+      {
+        "nombre": "Jude Bellingham",
+        "valor": 7
+      },
+      {
+        "nombre": "Erling Haaland",
+        "valor": 7
+      },
+      {
+        "nombre": "Harry Kane",
+        "valor": 6
+      },
+      {
+        "nombre": "Ousmane Dembélé",
+        "valor": 6
+      },
+      {
+        "nombre": "Mikel Oyarzabal",
+        "valor": 5
+      },
+      {
+        "nombre": "Julián Quiñones",
+        "valor": 4
+      },
+      {
+        "nombre": "Ismaïla Sarr",
+        "valor": 4
+      },
+      {
+        "nombre": "Vinícius Júnior",
+        "valor": 4
+      }
+    ],
+    "top_10_asistidores": [
+      {
+        "nombre": "Michael Olise",
+        "valor": 7
+      },
+      {
+        "nombre": "Lionel Messi",
+        "valor": 4
+      },
+      {
+        "nombre": "Brahim Díaz",
+        "valor": 4
+      },
+      {
+        "nombre": "Martin Ødegaard",
+        "valor": 4
+      },
+      {
+        "nombre": "Bruno Guimarães",
+        "valor": 4
+      },
+      {
+        "nombre": "Kylian Mbappé",
+        "valor": 4
+      },
+      {
+        "nombre": "Roberto Alvarado",
+        "valor": 3
+      },
+      {
+        "nombre": "Alexander Isak",
+        "valor": 3
+      },
+      {
+        "nombre": "Florian Wirtz",
+        "valor": 3
+      },
+      {
+        "nombre": "Bukayo Saka",
+        "valor": 3
+      }
+    ],
+    "top_10_regateadores": [
+      {
+        "nombre": "Lionel Messi",
+        "valor": 28
+      },
+      {
+        "nombre": "Vinícius Júnior",
+        "valor": 24
+      },
+      {
+        "nombre": "Kylian Mbappé",
+        "valor": 21
+      },
+      {
+        "nombre": "Lamine Yamal",
+        "valor": 19
+      },
+      {
+        "nombre": "Jude Bellingham",
+        "valor": 18
+      },
+      {
+        "nombre": "Jamal Musiala",
+        "valor": 17
+      },
+      {
+        "nombre": "Khvicha Kvaratskhelia",
+        "valor": 16
+      },
+      {
+        "nombre": "Jérémy Doku",
+        "valor": 15
+      },
+      {
+        "nombre": "Rafael Leão",
+        "valor": 14
+      },
+      {
+        "nombre": "Alphonso Davies",
+        "valor": 13
+      }
+    ],
+    "promedio_goles_equipos": [
+      {
+        "equipo": "Bélgica",
+        "promedio_goles": 2.4
+      },
+      {
+        "equipo": "España",
+        "promedio_goles": 2.25
+      },
+      {
+        "equipo": "Francia",
+        "promedio_goles": 2.14
+      },
+      {
+        "equipo": "Alemania",
+        "promedio_goles": 2.1
+      },
+      {
+        "equipo": "Argentina",
+        "promedio_goles": 2
+      },
+      {
+        "equipo": "Brasil",
+        "promedio_goles": 2
+      },
+      {
+        "equipo": "Portugal",
+        "promedio_goles": 1.9
+      },
+      {
+        "equipo": "Inglaterra",
+        "promedio_goles": 1.85
+      },
+      {
+        "equipo": "Países Bajos",
+        "promedio_goles": 1.8
+      },
+      {
+        "equipo": "México",
+        "promedio_goles": 1.75
+      }
+    ]
+  },
+  {
+    "edicion": 2022,
+    "top_10_goleadores": [
+      {
+        "nombre": "Kylian Mbappé",
+        "valor": 8
+      },
+      {
+        "nombre": "Lionel Messi",
+        "valor": 7
+      },
+      {
+        "nombre": "Julián Álvarez",
+        "valor": 4
+      },
+      {
+        "nombre": "Olivier Giroud",
+        "valor": 4
+      },
+      {
+        "nombre": "Gonçalo Ramos",
+        "valor": 3
+      },
+      {
+        "nombre": "Álvaro Morata",
+        "valor": 3
+      },
+      {
+        "nombre": "Marcus Rashford",
+        "valor": 3
+      },
+      {
+        "nombre": "Enner Valencia",
+        "valor": 3
+      },
+      {
+        "nombre": "Bukayo Saka",
+        "valor": 3
+      },
+      {
+        "nombre": "Richarlison",
+        "valor": 3
+      }
+    ],
+    "top_10_asistidores": [
+      {
+        "nombre": "Lionel Messi",
+        "valor": 3
+      },
+      {
+        "nombre": "Antoine Griezmann",
+        "valor": 3
+      },
+      {
+        "nombre": "Harry Kane",
+        "valor": 3
+      },
+      {
+        "nombre": "Bruno Fernandes",
+        "valor": 3
+      },
+      {
+        "nombre": "Ivan Perišić",
+        "valor": 3
+      },
+      {
+        "nombre": "Kylian Mbappé",
+        "valor": 2
+      },
+      {
+        "nombre": "Ousmane Dembélé",
+        "valor": 2
+      },
+      {
+        "nombre": "Jordi Alba",
+        "valor": 2
+      },
+      {
+        "nombre": "João Félix",
+        "valor": 2
+      },
+      {
+        "nombre": "Vinícius Júnior",
+        "valor": 2
+      }
+    ],
+    "top_10_regateadores": [
+      {
+        "nombre": "Kylian Mbappé",
+        "valor": 21
+      },
+      {
+        "nombre": "Jamal Musiala",
+        "valor": 19
+      },
+      {
+        "nombre": "Lionel Messi",
+        "valor": 15
+      },
+      {
+        "nombre": "Sofiane Boufal",
+        "valor": 14
+      },
+      {
+        "nombre": "Ángel Di María",
+        "valor": 13
+      },
+      {
+        "nombre": "Ousmane Dembélé",
+        "valor": 11
+      },
+      {
+        "nombre": "Neymar",
+        "valor": 9
+      },
+      {
+        "nombre": "Ismaïla Sarr",
+        "valor": 9
+      },
+      {
+        "nombre": "Hakim Ziyech",
+        "valor": 8
+      },
+      {
+        "nombre": "Christian Pulisic",
+        "valor": 7
+      }
+    ],
+    "promedio_goles_equipos": [
+      {
+        "equipo": "Inglaterra",
+        "promedio_goles": 2.6
+      },
+      {
+        "equipo": "Portugal",
+        "promedio_goles": 2.4
+      },
+      {
+        "equipo": "Francia",
+        "promedio_goles": 2.28
+      },
+      {
+        "equipo": "España",
+        "promedio_goles": 2.25
+      },
+      {
+        "equipo": "Argentina",
+        "promedio_goles": 2.14
+      },
+      {
+        "equipo": "Países Bajos",
+        "promedio_goles": 2
+      },
+      {
+        "equipo": "Alemania",
+        "promedio_goles": 2
+      },
+      {
+        "equipo": "Brasil",
+        "promedio_goles": 1.6
+      },
+      {
+        "equipo": "Suiza",
+        "promedio_goles": 1.25
+      },
+      {
+        "equipo": "Croacia",
+        "promedio_goles": 1.14
+      }
+    ]
+  }
+]

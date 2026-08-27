@@ -1,0 +1,177 @@
+#partidos,.tournament-block {
+  display:block;
+  width:100%;
+  min-width:0}
+.tournament-block + .tournament-block {
+  margin-top:64px}
+.tournament-title {
+  margin-bottom:22px}
+.tournament-title h3 {
+  font-size:30px;
+  margin:7px 0 0;
+  letter-spacing:-.035em}
+.tournament-title p {
+  color:var(--muted);
+  font-size:13px}
+.group-tabs {
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding-bottom:10px;
+  margin-bottom:18px}
+.group-tab {
+  white-space:nowrap;
+  border:1px solid var(--line);
+  background:white;
+  padding:10px 15px;
+  border-radius:99px;
+  font-weight:800;
+  color:var(--muted);
+  cursor:pointer}
+.group-tab.active {
+  background:var(--ink);
+  border-color:var(--ink);
+  color:var(--lime)}
+.group-panel {
+  display:none}
+.group-panel.active {
+  display:block}
+.team-line {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  min-width:0}
+.team-flag {
+  width:28px;
+  height:20px;
+  object-fit:cover;
+  border-radius:3px;
+  box-shadow:0 0 0 1px #0002;
+  flex:none}
+.score {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-size:24px}
+.score strong {
+  display:grid;
+  place-items:center;
+  min-width:34px;
+  height:34px;
+  border-radius:7px;
+  background:var(--ink);
+  color:white}
+.score b {
+  font-size:12px;
+  color:var(--muted)}
+.bracket {
+  display:flex;
+  width:100%;
+  gap:18px;
+  align-items:stretch;
+  padding:4px 4px 22px}
+.bracket-round {
+  min-width:0;
+  flex:1;
+  display:flex;
+  flex-direction:column}
+.bracket-round h4 {
+  margin:0;
+  padding:10px 4px;
+  background:var(--ink);
+  color:var(--lime);
+  border-radius:10px 10px 0 0;
+  text-transform:uppercase;
+  letter-spacing:normal;
+  font-size:9px;
+  text-align:center;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap}
+.bracket-matches {
+  background:#e9ede9;
+  flex:1;
+  padding:4px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-around;
+  gap:6px;
+  border-radius:0 0 10px 10px}
+.bracket .match-card {
+  display:block;
+  padding:6px;
+  overflow:hidden}
+.bracket .match-meta {
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  font-size:10px;
+  text-align:center}
+.bracket .match-meta>span {
+  font-size:8px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:100%}
+.bracket .match-meta time {
+  font-size:8px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:100%}
+.bracket .teams {
+  min-height:60px;
+  font-size:11px;
+  flex-direction:column;
+  gap:5px}
+.bracket .team-line {
+  width:100%}
+.bracket .team-line span {
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap}
+.bracket .teams b {
+  font-size:9px}
+.bracket .team-flag {
+  width:20px;
+  height:14px}
+.bracket .score {
+  font-size:12px}
+.bracket .score strong {
+  min-width:20px;
+  height:20px}
+.bracket .match-footer {
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  padding-top:10px;
+  text-align:center;
+  font-size:8px}
+.bracket .badge {
+  font-size:8px;
+  padding:4px;
+  letter-spacing:normal;
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis}
+.bracket .match-footer>span:first-child {
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap}
+@media(max-width:600px) {
+  .section {
+    padding-left:14px;
+    padding-right:14px
+  }
+  .tournament-title h3 {
+    font-size:26px
+  }
+  .team-flag {
+    width:24px;
+    height:17px
+  }
+}
+

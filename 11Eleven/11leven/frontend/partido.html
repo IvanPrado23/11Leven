@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Partido | 11Leven</title>
+  <link rel="icon" href="img/app-icon.svg">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/pitch.css">
+  <link rel="stylesheet" href="css/user-notifications.css">
+</head>
+<body>
+  <header class="site-header">
+    <a href="/" class="brand"><img src="img/logo-principal.svg" alt="11Leven"></a>
+    <nav>
+      <a href="/">Mundiales</a>
+      <a class="active" href="torneo.html?anio=2026" id="navTournament">Mundial</a>
+      <a href="admin.html">Administración</a>
+    </nav>
+  </header>
+
+  <main class="section">
+    <a class="back" id="backLink" href="/">← Volver al Mundial</a>
+    <div id="status" class="notice" hidden></div>
+    <section id="matchHeader" class="match-hero"></section>
+    <div id="lineups" class="lineups"></div>
+  </main>
+
+  <footer>Datos registrados en la base de datos 11Leven</footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/partido.js"></script>
+  <script src="js/user-notifications.js"></script>
+</body>
+</html>
