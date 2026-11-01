@@ -1,18 +1,53 @@
 const db = require('../config/db');
 
 const definitions = {
-  selecciones: { table: 'seleccion', id: 'id_seleccion', fields: ['id_torneo', 'nombre', 'bandera', 'grupo_fifa'], required: ['id_torneo', 'nombre', 'grupo_fifa'] },
-  jugadores: { table: 'jugador', id: 'id_jugador', fields: ['nombre', 'dorsal', 'posicion', 'id_seleccion'], required: ['nombre', 'dorsal', 'posicion', 'id_seleccion'] },
-  partidos: { table: 'partido', id: 'id_partido', fields: ['id_torneo', 'fecha', 'hora', 'estadio', 'fase_torneo', 'estado_partido'], required: ['id_torneo', 'fecha', 'hora', 'estadio', 'fase_torneo', 'estado_partido'] },
-  usuarios: { table: 'usuario', id: 'id_usuario', fields: ['nombre', 'correo', 'idioma', 'notificaciones'], required: ['nombre', 'correo', 'idioma', 'notificaciones'] }
+  selecciones: {
+    id: 'id_seleccion',
+    outField: 'p_id_seleccion',
+    required: ['id_torneo', 'nombre', 'grupo_fifa'],
+    spList: (q) => ({ sql: 'SELECT * FROM sp_listar_selecciones($1, $2)', params: [q.id_torneo || null, q.anio || null] }),
+    spGet: (id) => ({ sql: 'SELECT * FROM sp_obtener_seleccion($1)', params: [id] }),
+    spCreate: (b) => ({ sql: 'CALL sp_crear_seleccion($1, $2, $3, $4, NULL)', params: [b.id_torneo, b.nombre, b.bandera || null, b.grupo_fifa] }),
+    spUpdate: (id, b) => ({ sql: 'CALL sp_actualizar_seleccion($1, $2, $3, $4, $5)', params: [id, b.id_torneo, b.nombre, b.bandera || null, b.grupo_fifa] }),
+    spDelete: (id) => ({ sql: 'CALL sp_eliminar_seleccion($1)', params: [id] })
+  },
+  jugadores: {
+    id: 'id_jugador',
+    outField: 'p_id_jugador',
+    required: ['nombre', 'dorsal', 'posicion', 'id_seleccion'],
+    spList: (q) => ({ sql: 'SELECT * FROM sp_listar_jugadores($1)', params: [q.id_seleccion || null] }),
+    spGet: (id) => ({ sql: 'SELECT * FROM sp_obtener_jugador($1)', params: [id] }),
+    spCreate: (b) => ({ sql: 'CALL sp_crear_jugador($1, $2, $3, $4, NULL)', params: [b.nombre, b.dorsal, b.posicion, b.id_seleccion] }),
+    spUpdate: (id, b) => ({ sql: 'CALL sp_actualizar_jugador($1, $2, $3, $4, $5)', params: [id, b.nombre, b.dorsal, b.posicion, b.id_seleccion] }),
+    spDelete: (id) => ({ sql: 'CALL sp_eliminar_jugador($1)', params: [id] })
+  },
+  partidos: {
+    id: 'id_partido',
+    outField: 'p_id_partido',
+    required: ['id_torneo', 'fecha', 'hora', 'estadio', 'fase_torneo', 'estado_partido'],
+    spList: (q) => ({ sql: 'SELECT * FROM sp_listar_partidos($1, $2)', params: [q.id_torneo || null, q.anio || null] }),
+    spGet: (id) => ({ sql: 'SELECT * FROM sp_obtener_partido($1)', params: [id] }),
+    spCreate: (b) => ({ sql: 'CALL sp_crear_partido($1, $2, $3, $4, $5, $6, NULL)', params: [b.id_torneo, b.fecha, b.hora, b.estadio, b.fase_torneo, b.estado_partido] }),
+    spUpdate: (id, b) => ({ sql: 'CALL sp_actualizar_partido($1, $2, $3, $4, $5, $6, $7)', params: [id, b.id_torneo, b.fecha, b.hora, b.estadio, b.fase_torneo, b.estado_partido] }),
+    spDelete: (id) => ({ sql: 'CALL sp_eliminar_partido($1)', params: [id] })
+  },
+  usuarios: {
+    id: 'id_usuario',
+    outField: 'p_id_usuario',
+    required: ['nombre', 'correo', 'idioma', 'notificaciones'],
+    spList: () => ({ sql: 'SELECT * FROM sp_listar_usuarios()', params: [] }),
+    spGet: (id) => ({ sql: 'SELECT * FROM sp_obtener_usuario($1)', params: [id] }),
+    spCreate: (b) => ({
+      sql: 'CALL sp_crear_usuario($1, $2, $3, $4, NULL)',
+      params: [b.nombre, b.correo, b.idioma, Boolean(Number(b.notificaciones ?? 1))]
+    }),
+    spUpdate: (id, b) => ({
+      sql: 'CALL sp_actualizar_usuario($1, $2, $3, $4, $5)',
+      params: [id, b.nombre, b.correo, b.idioma, Boolean(Number(b.notificaciones ?? 1))]
+    }),
+    spDelete: (id) => ({ sql: 'CALL sp_eliminar_usuario($1)', params: [id] })
+  }
 };
-
-function valuesFor(body, fields) {
-  return fields.map((field) => {
-    const val = body[field];
-    return val === undefined || val === '' ? null : val;
-  });
-}
 
 function missingFields(body, required) {
   return required.filter((field) => body[field] === undefined || body[field] === '');
@@ -20,103 +55,74 @@ function missingFields(body, required) {
 
 function validationProblem(resource, body) {
   if (resource === 'jugadores' && !['Portero', 'Defensa', 'Mediocampista', 'Delantero'].includes(body.posicion)) {
-    return 'Selecciona una posición válida para el jugador.';
+    return 'Selecciona una posición válida para el jugador: Portero, Defensa, Mediocampista o Delantero.';
   }
   return null;
 }
 
 function controller(resource) {
-  const { table, id, fields, required } = definitions[resource];
+  const def = definitions[resource];
   return {
     async list(req, res, next) {
       try {
-        const conditions = [];
-        const params = [];
-
-        if (resource === 'partidos') {
-          if (req.query.id_torneo) { conditions.push('p.id_torneo = ?'); params.push(req.query.id_torneo); }
-          if (req.query.anio) { conditions.push('t.anio = ?'); params.push(req.query.anio); }
-          const where = conditions.length ? ` WHERE ${conditions.join(' AND ')}` : '';
-          const [rows] = await db.execute(
-            `SELECT p.*, t.anio AS anio_torneo, t.nombre AS nombre_torneo
-             FROM partido p JOIN torneo t ON t.id_torneo = p.id_torneo${where}
-             ORDER BY p.fecha ASC, p.hora ASC, p.id_partido ASC`,
-            params
-          );
-          return res.json(rows);
-        }
-
-        if (resource === 'selecciones') {
-          if (req.query.id_torneo) { conditions.push('s.id_torneo = ?'); params.push(req.query.id_torneo); }
-          if (req.query.anio) { conditions.push('t.anio = ?'); params.push(req.query.anio); }
-          const where = conditions.length ? ` WHERE ${conditions.join(' AND ')}` : '';
-          const [rows] = await db.execute(
-            `SELECT s.*, t.anio AS anio_torneo, t.nombre AS nombre_torneo
-             FROM seleccion s JOIN torneo t ON t.id_torneo = s.id_torneo${where}
-             ORDER BY s.grupo_fifa ASC, s.nombre ASC`,
-            params
-          );
-          return res.json(rows);
-        }
-
-        if (resource === 'jugadores') {
-          if (req.query.id_seleccion) { conditions.push('id_seleccion = ?'); params.push(req.query.id_seleccion); }
-          const where = conditions.length ? ` WHERE ${conditions.join(' AND ')}` : '';
-          const [rows] = await db.execute(`SELECT * FROM jugador${where} ORDER BY dorsal ASC`, params);
-          return res.json(rows);
-        }
-
-        const [rows] = await db.execute(`SELECT * FROM ${table} ORDER BY ${id} DESC`);
-        res.json(rows);
-      } catch (error) { next(error); }
+        const query = def.spList(req.query);
+        const [rows] = await db.query(query.sql, query.params);
+        res.json(rows || []);
+      } catch (error) {
+        next(error);
+      }
     },
+
     async get(req, res, next) {
       try {
-        if (resource === 'partidos') {
-          const [rows] = await db.execute(
-            `SELECT p.*, t.anio AS anio_torneo, t.nombre AS nombre_torneo
-             FROM partido p JOIN torneo t ON t.id_torneo = p.id_torneo
-             WHERE p.id_partido = ?`,
-            [req.params.id]
-          );
-          if (!rows.length) return res.status(404).json({ error: 'Registro no encontrado.' });
-          return res.json(rows[0]);
-        }
-
-        const [rows] = await db.execute(`SELECT * FROM ${table} WHERE ${id} = ?`, [req.params.id]);
+        const query = def.spGet(req.params.id);
+        const [rows] = await db.query(query.sql, query.params);
         if (!rows.length) return res.status(404).json({ error: 'Registro no encontrado.' });
         res.json(rows[0]);
-      } catch (error) { next(error); }
+      } catch (error) {
+        next(error);
+      }
     },
+
     async create(req, res, next) {
       try {
-        const missing = missingFields(req.body, required);
+        const missing = missingFields(req.body, def.required);
         if (missing.length) return res.status(400).json({ error: `Faltan campos: ${missing.join(', ')}` });
         const problem = validationProblem(resource, req.body);
         if (problem) return res.status(400).json({ error: problem });
-        const placeholders = fields.map(() => '?').join(', ');
-        const [result] = await db.execute(`INSERT INTO ${table} (${fields.join(', ')}) VALUES (${placeholders})`, valuesFor(req.body, fields));
-        res.status(201).json({ [id]: result.insertId, ...req.body });
-      } catch (error) { next(error); }
+
+        const query = def.spCreate(req.body);
+        const [rows] = await db.query(query.sql, query.params);
+        const insertId = rows[0]?.[def.outField] || rows[0]?.[def.id];
+        res.status(201).json({ [def.id]: insertId, ...req.body });
+      } catch (error) {
+        next(error);
+      }
     },
+
     async update(req, res, next) {
       try {
-        const missing = missingFields(req.body, required);
+        const missing = missingFields(req.body, def.required);
         if (missing.length) return res.status(400).json({ error: `Faltan campos: ${missing.join(', ')}` });
         const problem = validationProblem(resource, req.body);
         if (problem) return res.status(400).json({ error: problem });
-        const set = fields.map((field) => `${field} = ?`).join(', ');
-        const [result] = await db.execute(`UPDATE ${table} SET ${set} WHERE ${id} = ?`, [...valuesFor(req.body, fields), req.params.id]);
-        if (!result.affectedRows) return res.status(404).json({ error: 'Registro no encontrado.' });
-        res.json({ [id]: Number(req.params.id), ...req.body });
-      } catch (error) { next(error); }
+
+        const query = def.spUpdate(req.params.id, req.body);
+        await db.query(query.sql, query.params);
+        res.json({ [def.id]: Number(req.params.id), ...req.body });
+      } catch (error) {
+        next(error);
+      }
     },
+
     async remove(req, res, next) {
       try {
-        const [result] = await db.execute(`DELETE FROM ${table} WHERE ${id} = ?`, [req.params.id]);
-        if (!result.affectedRows) return res.status(404).json({ error: 'Registro no encontrado.' });
+        const query = def.spDelete(req.params.id);
+        await db.query(query.sql, query.params);
         res.status(204).end();
-      } catch (error) { next(error); }
+      } catch (error) {
+        next(error);
+      }
     }
   };
 }

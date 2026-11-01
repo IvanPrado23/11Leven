@@ -1,0 +1,16 @@
+{
+  "name": "11leven-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Acceso raíz para 11Leven",
+  "scripts": {
+    "start": "npm start --prefix 11Eleven/11leven/backend",
+    "dev": "npm run dev --prefix 11Eleven/11leven/backend",
+    "db:setup": "npm run db:setup --prefix 11Eleven/11leven/backend",
+    "db:populate": "npm run db:populate --prefix 11Eleven/11leven/backend",
+    "db:lineups": "npm run db:lineups --prefix 11Eleven/11leven/backend",
+    "db:results": "npm run db:results --prefix 11Eleven/11leven/backend",
+    "test:integration": "npm run test:integration --prefix 11Eleven/11leven/backend",
+    "test:procedures": "npm run test:procedures --prefix 11Eleven/11leven/backend"
+  }
+}

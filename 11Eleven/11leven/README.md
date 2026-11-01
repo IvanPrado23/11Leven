@@ -126,6 +126,37 @@ Cuando una alineación se guarda como `Confirmada`, el backend crea una notifica
 
 En la página pública, una campana flotante permite seleccionar uno de los usuarios con avisos habilitados. La aplicación consulta nuevas notificaciones periódicamente, muestra un aviso emergente y permite abrir directamente el partido relacionado. El navegador recuerda el usuario seleccionado y los avisos ya mostrados mediante `localStorage`.
 
+### `historial_alineacion` (Auditoría de Rotaciones y Esquemas)
+
+Cumpliendo con el **Objetivo 1.4 del documento del proyecto** (*"Registrar el historial de alineaciones de cada selección durante el torneo: rotaciones, lesiones, sanciones"*), esta tabla registra automáticamente mediante el trigger `trg_alineacion_historial_after_update` cualquier cambio en la formación táctica o en el estado de una alineación, conservando el valor anterior, el nuevo, la fecha exacta y el motivo del cambio.
+
+## Procedimientos Almacenados y Triggers en la Base de Datos
+
+Para profesionalizar la arquitectura y trasladar las reglas de negocio a la capa de persistencia (MySQL 8), el sistema cuenta con:
+
+### 1. Procedimientos Almacenados (Stored Procedures - CRUD y Reportes)
+- **Torneo:** `sp_listar_torneos`, `sp_obtener_torneo`, `sp_crear_torneo`, `sp_actualizar_torneo`, `sp_eliminar_torneo`.
+- **Selección:** `sp_listar_selecciones`, `sp_obtener_seleccion`, `sp_crear_seleccion`, `sp_actualizar_seleccion`, `sp_eliminar_seleccion`.
+- **Jugador:** `sp_listar_jugadores`, `sp_obtener_jugador`, `sp_crear_jugador`, `sp_actualizar_jugador`, `sp_eliminar_jugador`.
+- **Partido:** `sp_listar_partidos`, `sp_obtener_partido`, `sp_crear_partido`, `sp_actualizar_partido`, `sp_eliminar_partido`.
+- **Usuario:** `sp_listar_usuarios`, `sp_obtener_usuario`, `sp_crear_usuario`, `sp_actualizar_usuario`, `sp_eliminar_usuario`.
+- **Alineación:** `sp_listar_alineaciones`, `sp_obtener_alineacion`, `sp_obtener_jugadores_alineacion`, `sp_crear_alineacion`, `sp_actualizar_alineacion`, `sp_eliminar_alineacion`, `sp_limpiar_jugadores_alineacion`, `sp_asignar_jugador_alineacion`.
+- **Notificación:** `sp_listar_notificaciones`, `sp_obtener_notificacion`, `sp_crear_notificacion`, `sp_actualizar_notificacion`, `sp_eliminar_notificacion`, `sp_obtener_notificaciones_usuario`.
+- **Consultas Oficiales del Documento:**
+  - `sp_consultar_alineaciones_confirmadas`: Consulta 1 del documento (pág. 37).
+  - `sp_consultar_titulares_alineacion`: Consulta 2 del documento (pág. 38).
+  - `sp_consultar_usuarios_notificaciones`: Consulta 3 del documento (pág. 39).
+  - `sp_consultar_alineaciones_para_notificar`: Consulta 4 del documento (pág. 39).
+  - `sp_historial_alineaciones`: Reporte de rotaciones y cambios tácticos por selección.
+
+### 2. Triggers (Disparadores de Integridad y Negocio)
+- `trg_alineacion_before_insert`: Aplica la **Regla de Negocio 1** del documento (máximo dos alineaciones oficiales por partido). Si ya existen dos, rechaza la inserción con `SIGNAL SQLSTATE '45000'`.
+- `trg_alineacion_confirmada_after_insert`: Genera automáticamente los registros en `notificacion` para usuarios suscritos cuando se crea una alineación confirmada.
+- `trg_alineacion_confirmada_after_update`: Dispara las notificaciones automáticas cuando una alineación cambia su estado a `Confirmada`.
+- `trg_alineacion_historial_after_update`: Registra en `historial_alineacion` cualquier variación de estado o esquema táctico.
+- `trg_aj_before_insert` y `trg_aj_before_update`: Valida que el jugador pertenezca a la selección de la alineación y hace cumplir las **Reglas 5 y 6** (titulares no tienen minuto de cambio, suplentes con minuto entre 1 y 120).
+- `trg_jugador_before_insert` y `trg_jugador_before_update`: Aplica la **Regla de Negocio 8** (dorsal único por selección) con mensajes descriptivos.
+
 ## Procedencia e importación de los datos
 
 ### Selecciones, plantillas y calendario inicial

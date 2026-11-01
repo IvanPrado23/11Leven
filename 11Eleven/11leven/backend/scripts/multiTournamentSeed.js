@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const mysql = require('mysql2/promise');
+const db = require('../config/db');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 // Datos maestros de los 7 Mundiales (2000 - 2026)
@@ -561,17 +561,9 @@ function generate32Matches(year, groups) {
 
 // Función principal de siembra
 async function seedAllTournaments() {
-  console.log('Iniciando población de todos los Mundiales (2000 - 2026)...');
+  console.log('Iniciando población de todos los Mundiales (2000 - 2026) en PostgreSQL...');
 
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST || 'localhost',
-    port: Number(process.env.DB_PORT || 3306),
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || '11leven',
-    dateStrings: true
-  });
-
+  const connection = await db.getConnection();
   const allFifaResults = [];
 
   try {
@@ -581,18 +573,21 @@ async function seedAllTournaments() {
       console.log(`\nProcesando ${t.nombre} (${t.anio})...`);
 
       // 1. Insertar o actualizar Torneo
-      const [tRes] = await connection.execute(
+      const [tRow] = await connection.query(
         `INSERT INTO torneo (anio, nombre, pais_sede, logo_url, campeon, subcampeon, cantidad_equipos, cantidad_partidos, descripcion)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-         ON DUPLICATE KEY UPDATE nombre=VALUES(nombre), pais_sede=VALUES(pais_sede), campeon=VALUES(campeon), subcampeon=VALUES(subcampeon), logo_url=VALUES(logo_url)`,
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         ON CONFLICT (anio) DO UPDATE
+         SET nombre = EXCLUDED.nombre,
+             pais_sede = EXCLUDED.pais_sede,
+             campeon = EXCLUDED.campeon,
+             subcampeon = EXCLUDED.subcampeon,
+             logo_url = EXCLUDED.logo_url
+         RETURNING id_torneo`,
         [t.anio, t.nombre, t.pais_sede, t.logo_url, t.campeon, t.subcampeon, t.cantidad_equipos, t.cantidad_partidos, t.descripcion]
       );
-
-      const [tRow] = await connection.execute('SELECT id_torneo FROM torneo WHERE anio = ?', [t.anio]);
       const idTorneo = tRow[0].id_torneo;
 
       if (t.anio === 2026) {
-        // Para 2026 reutilizamos el dataset de 48 selecciones y 104 partidos
         console.log('  -> Población especial 2026 (48 selecciones / 104 partidos)');
         continue;
       }
@@ -605,16 +600,13 @@ async function seedAllTournaments() {
       for (const [groupLetter, teamList] of Object.entries(groups)) {
         for (const teamName of teamList) {
           const flag = getFlag(teamName);
-          const [sRes] = await connection.execute(
+          const [sRow] = await connection.query(
             `INSERT INTO seleccion (id_torneo, nombre, bandera, grupo_fifa)
-             VALUES (?, ?, ?, ?)
-             ON DUPLICATE KEY UPDATE bandera=VALUES(bandera), grupo_fifa=VALUES(grupo_fifa)`,
+             VALUES ($1, $2, $3, $4)
+             ON CONFLICT (id_torneo, nombre) DO UPDATE
+             SET bandera = EXCLUDED.bandera, grupo_fifa = EXCLUDED.grupo_fifa
+             RETURNING id_seleccion`,
             [idTorneo, teamName, flag, groupLetter]
-          );
-
-          const [sRow] = await connection.execute(
-            'SELECT id_seleccion FROM seleccion WHERE id_torneo=? AND nombre=?',
-            [idTorneo, teamName]
           );
           const idSeleccion = sRow[0].id_seleccion;
           teamIdMap.set(teamName, idSeleccion);
@@ -624,10 +616,11 @@ async function seedAllTournaments() {
           const squad = customSquad || generateSquad(teamName, 23);
 
           for (const pl of squad) {
-            await connection.execute(
+            await connection.query(
               `INSERT INTO jugador (id_seleccion, nombre, dorsal, posicion)
-               VALUES (?, ?, ?, ?)
-               ON DUPLICATE KEY UPDATE nombre=VALUES(nombre), posicion=VALUES(posicion)`,
+               VALUES ($1, $2, $3, $4)
+               ON CONFLICT (id_seleccion, dorsal) DO UPDATE
+               SET nombre = EXCLUDED.nombre, posicion = EXCLUDED.posicion`,
               [idSeleccion, pl.n, pl.d, pl.p]
             );
           }
@@ -638,36 +631,39 @@ async function seedAllTournaments() {
       const matches = generate32Matches(t.anio, groups);
 
       for (const m of matches) {
-        const [pRes] = await connection.execute(
+        const [pRes] = await connection.query(
           `INSERT INTO partido (id_torneo, fecha, hora, estadio, fase_torneo, estado_partido)
-           VALUES (?, ?, ?, ?, ?, ?)`,
+           VALUES ($1, $2, $3, $4, $5, $6)
+           RETURNING id_partido`,
           [idTorneo, m.fecha, m.hora, m.estadio, m.fase_torneo, 'Finalizado']
         );
-        const idPartido = pRes.insertId;
+        const idPartido = pRes[0].id_partido;
 
         const idLocal = teamIdMap.get(m.local);
         const idVisitante = teamIdMap.get(m.visitante);
 
         if (idLocal && idVisitante) {
           // Alineación Local
-          const [alRes] = await connection.execute(
+          const [alRes] = await connection.query(
             `INSERT INTO alineacion (id_partido, id_seleccion, formacion_tactica, tipo, fuente, fecha_publicacion, estado, goles)
-             VALUES (?, ?, '4-3-3', 'Titular', 'FIFA Archivo Histórico', ?, 'Confirmada', ?)`,
+             VALUES ($1, $2, '4-3-3', 'Titular', 'FIFA Archivo Histórico', $3, 'Confirmada', $4)
+             RETURNING id_alineacion`,
             [idPartido, idLocal, `${m.fecha} ${m.hora}`, m.goles_local]
           );
-          const idAlLocal = alRes.insertId;
+          const idAlLocal = alRes[0].id_alineacion;
 
           // Alineación Visitante
-          const [avRes] = await connection.execute(
+          const [avRes] = await connection.query(
             `INSERT INTO alineacion (id_partido, id_seleccion, formacion_tactica, tipo, fuente, fecha_publicacion, estado, goles)
-             VALUES (?, ?, '4-4-2', 'Titular', 'FIFA Archivo Histórico', ?, 'Confirmada', ?)`,
+             VALUES ($1, $2, '4-4-2', 'Titular', 'FIFA Archivo Histórico', $3, 'Confirmada', $4)
+             RETURNING id_alineacion`,
             [idPartido, idVisitante, `${m.fecha} ${m.hora}`, m.goles_visitante]
           );
-          const idAlVis = avRes.insertId;
+          const idAlVis = avRes[0].id_alineacion;
 
           // Convocados para ambas alineaciones
-          const [pLocal] = await connection.execute('SELECT id_jugador, posicion, dorsal FROM jugador WHERE id_seleccion=? ORDER BY dorsal', [idLocal]);
-          const [pVis] = await connection.execute('SELECT id_jugador, posicion, dorsal FROM jugador WHERE id_seleccion=? ORDER BY dorsal', [idVisitante]);
+          const [pLocal] = await connection.query('SELECT id_jugador, posicion, dorsal FROM jugador WHERE id_seleccion = $1 ORDER BY dorsal', [idLocal]);
+          const [pVis] = await connection.query('SELECT id_jugador, posicion, dorsal FROM jugador WHERE id_seleccion = $1 ORDER BY dorsal', [idVisitante]);
 
           const assignStats = async (players, idAlin, goalsToDistribute) => {
              let remainingGoals = goalsToDistribute;
@@ -685,14 +681,14 @@ async function seedAllTournaments() {
                    pAssists++;
                 }
 
-                await connection.execute(
-                  'INSERT INTO alineacion_jugador (id_alineacion, id_jugador, rol, posicion_cancha, goles, asistencias, regates) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                await connection.query(
+                  'INSERT INTO alineacion_jugador (id_alineacion, id_jugador, rol, posicion_cancha, goles, asistencias, regates) VALUES ($1, $2, $3, $4, $5, $6, $7)',
                   [idAlin, players[i].id_jugador, role, players[i].posicion, pGoals, pAssists, pDribbles]
                 );
              }
              if (remainingGoals > 0 && players[8]) {
-                 await connection.execute(
-                    'UPDATE alineacion_jugador SET goles = goles + ? WHERE id_alineacion = ? AND id_jugador = ?',
+                 await connection.query(
+                    'UPDATE alineacion_jugador SET goles = goles + $1 WHERE id_alineacion = $2 AND id_jugador = $3',
                     [remainingGoals, idAlin, players[8].id_jugador]
                  );
              }
@@ -724,11 +720,9 @@ async function seedAllTournaments() {
     await connection.commit();
     console.log('\n✓ Todos los Mundiales históricos (2002-2022) han sido sembrados con éxito.');
 
-    // Guardar resultados históricos combinados
     const dataDir = path.join(__dirname, '..', 'data');
     fs.mkdirSync(dataDir, { recursive: true });
     
-    // Preservar datos de torneos futuros (ej. 2026) que ya existan en el archivo
     const tournamentsPath = path.join(dataDir, 'tournamentsResults.json');
     if (fs.existsSync(tournamentsPath)) {
       const existingData = JSON.parse(fs.readFileSync(tournamentsPath, 'utf8'));
@@ -741,7 +735,7 @@ async function seedAllTournaments() {
     await connection.rollback();
     throw error;
   } finally {
-    await connection.end();
+    connection.release();
   }
 }
 

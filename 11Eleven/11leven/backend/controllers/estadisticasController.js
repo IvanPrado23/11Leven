@@ -14,7 +14,6 @@ exports.getJugadoresStats = async (req, res) => {
       return res.status(400).json({ error: 'Se requiere id_torneo' });
     }
 
-    // Since aj lacks id_partido, we use count of aj rows (as it represents 1 match appearance)
     const query = `
       SELECT 
         j.id_jugador, 
@@ -28,9 +27,9 @@ exports.getJugadoresStats = async (req, res) => {
       FROM jugador j
       JOIN seleccion s ON j.id_seleccion = s.id_seleccion
       JOIN alineacion_jugador aj ON aj.id_jugador = j.id_jugador
-      WHERE s.id_torneo = ?
+      WHERE s.id_torneo = $1
       GROUP BY j.id_jugador, j.nombre, s.nombre, s.bandera
-      HAVING ${sortBy} > 0
+      HAVING SUM(aj.${sortBy}) > 0
       ORDER BY ${sortBy} DESC
       LIMIT 15
     `;
@@ -58,7 +57,7 @@ exports.getEquiposStats = async (req, res) => {
         s.bandera,
         COUNT(a.id_alineacion) as partidos_jugados,
         SUM(a.goles) as total_goles,
-        CAST(SUM(a.goles) / COUNT(a.id_alineacion) AS DECIMAL(10,2)) as promedio_gol,
+        ROUND(SUM(a.goles)::NUMERIC / NULLIF(COUNT(a.id_alineacion), 0), 2) as promedio_gol,
         SUM(CASE 
               WHEN a.goles > (
                   SELECT a2.goles 
@@ -71,7 +70,7 @@ exports.getEquiposStats = async (req, res) => {
             END) as victorias
       FROM seleccion s
       JOIN alineacion a ON a.id_seleccion = s.id_seleccion
-      WHERE s.id_torneo = ?
+      WHERE s.id_torneo = $1
       GROUP BY s.id_seleccion, s.nombre, s.bandera
       ORDER BY promedio_gol DESC, victorias DESC
     `;

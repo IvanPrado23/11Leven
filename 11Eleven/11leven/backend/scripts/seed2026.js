@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const mysql = require('mysql2/promise');
+const db = require('../config/db');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const aliases = new Map([
@@ -64,17 +64,10 @@ function selectLineupPlayers(teamPlayers) {
 async function seed2026() {
   console.log('Sembrando Mundial 2026 (48 selecciones, 104 partidos)...');
 
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST || 'localhost',
-    port: Number(process.env.DB_PORT || 3306),
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || '11leven',
-    dateStrings: true
-  });
+  const connection = await db.getConnection();
 
   try {
-    const [tRow] = await connection.execute('SELECT id_torneo FROM torneo WHERE anio = 2026');
+    const [tRow] = await connection.query('SELECT id_torneo FROM torneo WHERE anio = 2026');
     if (!tRow.length) throw new Error('El torneo 2026 no existe en la base de datos.');
     const idTorneo2026 = tRow[0].id_torneo;
 
@@ -88,14 +81,12 @@ async function seed2026() {
     let match;
     while ((match = teamRegex.exec(rawSql)) !== null) {
       const [, teamName, groupLetter] = match;
-      const [res] = await connection.execute(
-        `INSERT INTO seleccion (id_torneo, nombre, bandera, grupo_fifa) VALUES (?, ?, NULL, ?)
-         ON DUPLICATE KEY UPDATE grupo_fifa=VALUES(grupo_fifa)`,
+      const [sRow] = await connection.query(
+        `INSERT INTO seleccion (id_torneo, nombre, bandera, grupo_fifa)
+         VALUES ($1, $2, NULL, $3)
+         ON CONFLICT (id_torneo, nombre) DO UPDATE SET grupo_fifa = EXCLUDED.grupo_fifa
+         RETURNING id_seleccion`,
         [idTorneo2026, teamName, groupLetter]
-      );
-      const [sRow] = await connection.execute(
-        'SELECT id_seleccion FROM seleccion WHERE id_torneo=? AND nombre=?',
-        [idTorneo2026, teamName]
       );
       teamMap.set(teamName, sRow[0].id_seleccion);
     }
@@ -106,9 +97,11 @@ async function seed2026() {
       const [, playerName, dorsal, position, teamName] = match;
       const idSeleccion = teamMap.get(teamName);
       if (idSeleccion) {
-        await connection.execute(
-          `INSERT INTO jugador (id_seleccion, nombre, dorsal, posicion) VALUES (?, ?, ?, ?)
-           ON DUPLICATE KEY UPDATE nombre=VALUES(nombre), posicion=VALUES(posicion)`,
+        await connection.query(
+          `INSERT INTO jugador (id_seleccion, nombre, dorsal, posicion)
+           VALUES ($1, $2, $3, $4)
+           ON CONFLICT (id_seleccion, dorsal) DO UPDATE
+           SET nombre = EXCLUDED.nombre, posicion = EXCLUDED.posicion`,
           [idSeleccion, playerName, Number(dorsal), position]
         );
       }
@@ -120,11 +113,13 @@ async function seed2026() {
     while ((match = matchRegex.exec(rawSql)) !== null) {
       const [, fecha, hora, estadioRaw, fase, estado] = match;
       const estadio = estadioRaw.replace(/''/g, "'");
-      const [pRes] = await connection.execute(
-        `INSERT INTO partido (id_torneo, fecha, hora, estadio, fase_torneo, estado_partido) VALUES (?, ?, ?, ?, ?, ?)`,
+      const [pRes] = await connection.query(
+        `INSERT INTO partido (id_torneo, fecha, hora, estadio, fase_torneo, estado_partido)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING id_partido`,
         [idTorneo2026, fecha, `${hora}:00`, estadio, fase, estado]
       );
-      matchIds.push(pRes.insertId);
+      matchIds.push(pRes[0].id_partido);
     }
 
     // 4. Poblar alineaciones y banderas desde tournamentsResults.json
@@ -132,10 +127,10 @@ async function seed2026() {
     if (fs.existsSync(tournamentsPath)) {
       const allResults = JSON.parse(fs.readFileSync(tournamentsPath, 'utf8'));
       const results = allResults.filter(r => r.anio === 2026);
-      const [teams] = await connection.execute('SELECT * FROM seleccion WHERE id_torneo = ?', [idTorneo2026]);
-      const [matches] = await connection.execute('SELECT * FROM partido WHERE id_torneo = ? ORDER BY id_partido', [idTorneo2026]);
-      const [allPlayers] = await connection.execute(
-        'SELECT j.* FROM jugador j JOIN seleccion s ON s.id_seleccion = j.id_seleccion WHERE s.id_torneo = ? ORDER BY j.id_seleccion, j.dorsal',
+      const [teams] = await connection.query('SELECT * FROM seleccion WHERE id_torneo = $1', [idTorneo2026]);
+      const [matches] = await connection.query('SELECT * FROM partido WHERE id_torneo = $1 ORDER BY id_partido', [idTorneo2026]);
+      const [allPlayers] = await connection.query(
+        'SELECT j.* FROM jugador j JOIN seleccion s ON s.id_seleccion = j.id_seleccion WHERE s.id_torneo = $1 ORDER BY j.id_seleccion, j.dorsal',
         [idTorneo2026]
       );
 
@@ -154,8 +149,8 @@ async function seed2026() {
         const awayTeam = teams.find((t) => normalizeName(t.nombre) === normalizeName(item.visitante));
         if (!localTeam || !awayTeam) continue;
 
-        if (item.bandera_local) await connection.execute('UPDATE seleccion SET bandera=? WHERE id_seleccion=?', [item.bandera_local, localTeam.id_seleccion]);
-        if (item.bandera_visitante) await connection.execute('UPDATE seleccion SET bandera=? WHERE id_seleccion=?', [item.bandera_visitante, awayTeam.id_seleccion]);
+        if (item.bandera_local) await connection.query('UPDATE seleccion SET bandera = $1 WHERE id_seleccion = $2', [item.bandera_local, localTeam.id_seleccion]);
+        if (item.bandera_visitante) await connection.query('UPDATE seleccion SET bandera = $1 WHERE id_seleccion = $2', [item.bandera_visitante, awayTeam.id_seleccion]);
 
         const matchStamp = `${currentMatch.fecha} ${currentMatch.hora}`;
         const sides = [
@@ -165,24 +160,26 @@ async function seed2026() {
 
         for (const side of sides) {
           const { team, goals } = side;
-          const [existing] = await connection.execute(
-            'SELECT id_alineacion FROM alineacion WHERE id_partido=? AND id_seleccion=?',
+          const [existing] = await connection.query(
+            'SELECT id_alineacion FROM alineacion WHERE id_partido = $1 AND id_seleccion = $2',
             [currentMatch.id_partido, team.id_seleccion]
           );
 
           let lineupId;
           if (existing.length > 0) {
             lineupId = existing[0].id_alineacion;
-            await connection.execute('UPDATE alineacion SET goles=? WHERE id_alineacion=?', [goals, lineupId]);
+            await connection.query('UPDATE alineacion SET goles = $1 WHERE id_alineacion = $2', [goals, lineupId]);
           } else {
-            const [alRes] = await connection.execute(
-              'INSERT INTO alineacion (id_partido, id_seleccion, formacion_tactica, tipo, fuente, fecha_publicacion, estado, goles) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            const [alRes] = await connection.query(
+              `INSERT INTO alineacion (id_partido, id_seleccion, formacion_tactica, tipo, fuente, fecha_publicacion, estado, goles)
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+               RETURNING id_alineacion`,
               [currentMatch.id_partido, team.id_seleccion, '4-3-3', 'Titular', 'FIFA Oficial 2026', matchStamp, 'Confirmada', goals]
             );
-            lineupId = alRes.insertId;
+            lineupId = alRes[0].id_alineacion;
           }
 
-          const [existingPlayers] = await connection.execute('SELECT COUNT(*) as c FROM alineacion_jugador WHERE id_alineacion=?', [lineupId]);
+          const [existingPlayers] = await connection.query('SELECT COUNT(*)::INT AS c FROM alineacion_jugador WHERE id_alineacion = $1', [lineupId]);
           if (existingPlayers[0].c === 0) {
             const squad = playersByTeam.get(team.id_seleccion) || [];
             if (squad.length > 0) {
@@ -202,14 +199,15 @@ async function seed2026() {
                    pAssists++;
                 }
 
-                await connection.execute(
-                  'INSERT INTO alineacion_jugador (id_alineacion, id_jugador, rol, posicion_cancha, goles, asistencias, regates) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                await connection.query(
+                  `INSERT INTO alineacion_jugador (id_alineacion, id_jugador, rol, posicion_cancha, goles, asistencias, regates)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7)`,
                   [lineupId, p.id_jugador, p.rol, p.posicion_cancha, pGoals, pAssists, pDribbles]
                 );
               }
               if (remainingGoals > 0 && roster[8]) {
-                 await connection.execute(
-                    'UPDATE alineacion_jugador SET goles = goles + ? WHERE id_alineacion = ? AND id_jugador = ?',
+                 await connection.query(
+                    'UPDATE alineacion_jugador SET goles = goles + $1 WHERE id_alineacion = $2 AND id_jugador = $3',
                     [remainingGoals, lineupId, roster[8].id_jugador]
                  );
               }
@@ -225,7 +223,7 @@ async function seed2026() {
     await connection.rollback();
     throw error;
   } finally {
-    await connection.end();
+    connection.release();
   }
 }
 

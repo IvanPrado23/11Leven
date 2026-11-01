@@ -62,9 +62,21 @@ app.use(express.static(frontend));
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Ruta no encontrada.' }));
 app.use((error, _req, res, _next) => {
   console.error(error);
-  if (error.code === 'ER_DUP_ENTRY') return res.status(409).json({ error: 'El registro ya existe o viola una restricción única.' });
-  if (error.code === 'ER_ROW_IS_REFERENCED_2') return res.status(409).json({ error: 'No se puede eliminar: existen registros asociados.' });
-  if (error.code === 'ECONNREFUSED' || error.code === 'ER_BAD_DB_ERROR') return res.status(503).json({ error: 'No fue posible conectar con MySQL. Revisa la configuración de backend/.env.' });
+  // PostgreSQL (P0001 = RAISE EXCEPTION de Triggers/Procedimientos, 23514 = check_violation) + compatibilidad MySQL
+  if (error.code === 'P0001' || error.code === '23514' || error.sqlState === '45000' || error.code === 'ER_SIGNAL_EXCEPTION') {
+    return res.status(400).json({ error: error.message });
+  }
+  // PostgreSQL 23505 = unique_violation
+  if (error.code === '23505' || error.code === 'ER_DUP_ENTRY') {
+    return res.status(409).json({ error: 'El registro ya existe o viola una restricción única.' });
+  }
+  // PostgreSQL 23503 = foreign_key_violation
+  if (error.code === '23503' || error.code === 'ER_ROW_IS_REFERENCED_2') {
+    return res.status(409).json({ error: 'No se puede eliminar o vincular: existen restricciones de clave foránea o registros asociados.' });
+  }
+  if (error.code === 'ECONNREFUSED' || error.code === '3D000' || error.code === '28P01' || error.code === 'ER_BAD_DB_ERROR') {
+    return res.status(503).json({ error: 'No fue posible conectar con PostgreSQL. Revisa la configuración de backend/.env.' });
+  }
   res.status(error.status || 500).json({ error: error.message || 'Error interno.' });
 });
 
